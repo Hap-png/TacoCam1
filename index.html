@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TacoSam Sky Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            border-bottom: 2px solid #ff4757;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; color: #ff4757; font-size: 24px; }
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background-color: #252525;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ff4757;
+        }
+        label {
+            font-weight: bold;
+            color: #ff4757;
+        }
+        input[type="date"] {
+            background-color: #121212;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1); /* Makes the calendar icon white */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+        th {
+            background-color: #252525;
+            color: #ff4757;
+        }
+        tr:hover { background-color: #252525; }
+        .snapshot-img {
+            max-width: 180px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .snapshot-img:hover {
+            transform: scale(1.05);
+            border-color: #ff4757;
+        }
+        .badge {
+            background-color: #2f3542;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #ffa502;
+            font-weight: bold;
+        }
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌮 TacoSam Sky Dashboard</h1>
+        <p style="color: #888; margin: 5px 0 0 0;">Automated Meteor, Airplane & Satellite Tracker</p>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="card">
+            <h2>Sky Captures Ledger</h2>
+            
+            <div class="filter-bar">
+                <label for="date-select">📅 View Calendar Day:</label>
+                <input type="date" id="date-select">
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Logged Frames</th>
+                        <th>Snapshot Preview (Click to view)</th>
+                    </tr>
+                </thead>
+                <tbody id="ledger-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Default the calendar picker input to show today's local date automatically
+        const dateInput = document.getElementById('date-select');
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+        async function loadLogs() {
+            try {
+                const response = await fetch('/detections_log.txt');
+                if (!response.ok) return;
+                const text = await response.text();
+                
+                const lines = text.trim().split('\n').reverse(); // Newest first
+                const tbody = document.getElementById('ledger-body');
+                
+                // Read whatever date the user currently has selected in the box
+                const selectedDate = dateInput.value; 
+
+                let matchCount = 0;
+                tbody.innerHTML = ''; 
+
+                lines.forEach(line => {
+                    if (!line.includes('|')) return;
+                    
+                    // Check if this log line belongs to our selected calendar date
+                    if (line.startsWith(selectedDate)) {
+                        const parts = line.split('|');
+                        const timestamp = parts[0].trim();
+                        const filename = parts[1].trim(); 
+                        const durationStr = parts[2] ? parts[2].replace('Tracking duration:', '').trim() : 'N/A';
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td style="font-weight: bold; color: #fff;">${timestamp}</td>
+                            <td><span class="badge">${durationStr}</span></td>
+                            <td>
+                                <a href="/snapshots/${filename}" target="_blank">
+                                    <img src="/snapshots/${filename}" class="snapshot-img" alt="Capture">
+                                </a>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                        matchCount++;
+                    }
+                });
+
+                // Display a friendly message if nothing flew by on the selected day
+                if (matchCount === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="no-data">🌌 No tracking events logged on ${selectedDate}.</td></tr>`;
+                }
+
+            } catch (err) {
+                console.error("Error updating logs:", err);
+            }
+        }
+
+        // Reload data whenever the user picks a new date on the calendar
+        dateInput.addEventListener('change', loadLogs);
+
+        // Run instantly and check for live updates every 5 seconds
+        loadLogs();
+        setInterval(loadLogs, 5000);
+    </script>
+</body>
+</html>

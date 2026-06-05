@@ -1,0 +1,14 @@
+# Ignore local video buffers and saved snapshot images
+sky_buffer/
+snapshots/
+
+# Ignore local text logs
+detections_log.txt
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# NEW: Protect active live credential files from accidental commits
+sky_watcher.py
+mask_painter.py
