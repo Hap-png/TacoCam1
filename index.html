@@ -1,197 +1,705 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TacoSam Sky Dashboard</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 20px;
-        }
-        header {
-            border-bottom: 2px solid #ff4757;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        h1 { margin: 0; color: #ff4757; font-size: 24px; }
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        .card {
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .filter-bar {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            background-color: #252525;
-            padding: 10px 15px;
-            border-radius: 6px;
-            border-left: 4px solid #ff4757;
-        }
-        label {
-            font-weight: bold;
-            color: #ff4757;
-        }
-        input[type="date"] {
-            background-color: #121212;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-family: inherit;
-            cursor: pointer;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1); /* Makes the calendar icon white */
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #2d2d2d;
-        }
-        th {
-            background-color: #252525;
-            color: #ff4757;
-        }
-        tr:hover { background-color: #252525; }
-        .snapshot-img {
-            max-width: 180px;
-            border-radius: 4px;
-            border: 1px solid #444;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .snapshot-img:hover {
-            transform: scale(1.05);
-            border-color: #ff4757;
-        }
-        .badge {
-            background-color: #2f3542;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #ffa502;
-            font-weight: bold;
-        }
-        .no-data {
-            text-align: center;
-            padding: 30px;
-            color: #888;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
+      :root {
+        --primary-color: #23ac38;
+        --primary-hover: #f3bd0a;
+        --bg-dark: #121212;
+        --card-bg: #1e1e1e;
+        --nav-bg: #1a1a1a;
+        --hover-bg: #252525;
+        --text-light: #ffffff;
+        --btn-success: #11aa51;
+        --btn-danger: #3a43c6;
+      }
 
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        background-color: var(--nav-bg);
+        border-bottom: 2px solid var(--primary-color);
+        padding: 15px 20px 0 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      .header-title h1 {
+        margin: 0;
+        color: var(--primary-color);
+        font-size: 24px;
+      }
+
+      .header-title p {
+        color: #888;
+        margin: 5px 0 15px 0;
+        font-size: 14px;
+      }
+
+      .nav-tabs {
+        display: flex;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .tab-btn {
+        background: none;
+        border: none;
+        color: #aaa;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 6px 6px 0 0;
+        transition: all 0.2s ease;
+      }
+
+      .tab-btn:hover {
+        background-color: var(--hover-bg);
+        color: #fff;
+      }
+      .tab-btn.active {
+        background-color: var(--card-bg);
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--primary-color);
+      }
+
+      .container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        margin-top: 0;
+        color: #fff;
+        font-size: 18px;
+        border-left: 4px solid var(--primary-color);
+        padding-left: 10px;
+      }
+
+      .live-monitor-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+      }
+
+      .video-placeholder {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background-color: #000;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #333;
+        color: #666;
+        position: relative;
+      }
+
+      .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #888;
+        font-weight: bold;
+      }
+
+      .live-indicator.streaming {
+        color: var(--btn-success);
+      }
+
+      .pulse-dot {
+        width: 10px;
+        height: 10px;
+        background-color: var(--btn-success);
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(0.9);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.4;
+        }
+        100% {
+          transform: scale(0.9);
+          opacity: 1;
+        }
+      }
+
+      /* CONTROL INTERFACE ELEMENTS */
+      .controls-row {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 10px 18px;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #fff;
+      }
+
+      .btn-primary {
+        background-color: #3867d6;
+      }
+      .btn-primary:hover {
+        background-color: #4b7bec;
+      }
+      .btn-on {
+        background-color: var(--btn-success);
+      }
+      .btn-off {
+        background-color: var(--btn-danger);
+      }
+
+      /* MASK PAINTER CANVAS CONTAINER */
+      .painter-container {
+        position: relative;
+        width: 640px;
+        height: 360px;
+        background: #000;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #444;
+        margin: 0 auto;
+      }
+
+      #painter-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        cursor: crosshair;
+        width: 640px;
+        height: 360px;
+      }
+
+      #base-mask-img {
+        width: 640px;
+        height: 360px;
+        display: block;
+      }
+
+      /* LEDGER TABLES */
+      .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        background-color: #252525;
+        padding: 10px 15px;
+        border-radius: 6px;
+      }
+
+      input[type="date"] {
+        background-color: var(--bg-dark);
+        border: 1px solid #444;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 4px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #2d2d2d;
+      }
+      th {
+        background-color: #252525;
+        color: var(--primary-color);
+        text-align: left;
+      }
+      tr:hover {
+        background-color: #252525;
+      }
+      .snapshot-img {
+        max-width: 180px;
+        border-radius: 4px;
+        border: 1px solid #444;
+      }
+      .badge {
+        background-color: #2f3542;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #ffa502;
+        font-weight: bold;
+      }
+      .no-data {
+        text-align: center;
+        padding: 30px;
+        color: #888;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
     <header>
+      <div class="header-title">
         <h1>🌮 TacoSam Sky Dashboard</h1>
-        <p style="color: #888; margin: 5px 0 0 0;">Automated Meteor, Airplane & Satellite Tracker</p>
+        <p>Automated Meteor, Airplane & Satellite Tracker</p>
+      </div>
+      <ul class="nav-tabs">
+        <li>
+          <button class="tab-btn active" onclick="switchTab('monitor')">
+            📺 Monitor
+          </button>
+        </li>
+        <li>
+          <button class="tab-btn" onclick="switchTab('painter-tab')">
+            🎨 Mask Painter
+          </button>
+        </li>
+        <li>
+          <button class="tab-btn" onclick="switchTab('events')">
+            📅 Events Ledger
+          </button>
+        </li>
+      </ul>
     </header>
 
-    <div class="dashboard-container">
-        <div class="card">
-            <h2>Sky Captures Ledger</h2>
-            
-            <div class="filter-bar">
-                <label for="date-select">📅 View Calendar Day:</label>
-                <input type="date" id="date-select">
+    <div class="container">
+      <div id="monitor" class="tab-content active">
+        <div class="live-monitor-container">
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+              "
+            >
+              <div id="feed-status" class="live-indicator">
+                <div
+                  class="pulse-dot"
+                  id="pulse-dot"
+                  style="display: none"
+                ></div>
+                <span id="status-text">CAMERA DISCONNECTED</span>
+              </div>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Logged Frames</th>
-                        <th>Snapshot Preview (Click to view)</th>
-                    </tr>
-                </thead>
-                <tbody id="ledger-body">
-                    </tbody>
-            </table>
+            <div
+              class="video-placeholder"
+              style="background: #000; overflow: hidden"
+            >
+              <img
+                id="stream-img"
+                src=""
+                style="
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                  display: none;
+                "
+              />
+              <div id="stream-fallback" style="text-align: center">
+                <span style="font-size: 48px">💤</span>
+                <p style="margin: 10px 0 0 0; font-weight: bold; color: #666">
+                  Stream Link is Off
+                </p>
+              </div>
+            </div>
+
+            <div class="controls-row">
+              <button
+                id="toggle-stream-btn"
+                class="btn btn-off"
+                onclick="toggleStream()"
+              >
+                ❌ Stream Connection: OFF
+              </button>
+              <button
+                id="toggle-sleep-btn"
+                class="btn btn-primary"
+                onclick="toggleSleepMode()"
+              >
+                🌙 Mode: Auto-Solar Sleep
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Observatory Status</h2>
+            <p style="margin-top: 15px">
+              <strong>System Status:</strong>
+              <span style="color: #2ed573">Online</span>
+            </p>
+            <p>
+              <strong>Tracking Engine:</strong>
+              <span id="tracking-status-lbl">Idle (Waiting for Night)</span>
+            </p>
+            <p>
+              <strong>Target Footprint:</strong> Low-Res Stream (2px - 50px)
+            </p>
+            <p><strong>Auto-Recycle Guard:</strong> 2.0 GB Limit</p>
+          </div>
         </div>
+      </div>
+
+      <div id="painter-tab" class="tab-content">
+        <div class="card">
+          <h2>Exclusion Mask Painter</h2>
+          <p style="color: #888; font-size: 14px; margin-bottom: 15px">
+            Hold left-click and drag your mouse to paint out unwanted objects
+            (trees, buildings, wires, horizon lights). Painted areas will turn
+            completely black, blinding the computer vision engine to motion
+            there.
+          </p>
+
+          <div
+            style="
+              margin-bottom: 15px;
+              display: flex;
+              gap: 20px;
+              align-items: center;
+            "
+          >
+            <button class="btn btn-primary" onclick="clearCanvas()">
+              🧹 Clear Selection
+            </button>
+            <button
+              style="background-color: var(--primary-hover); color: #000"
+              class="btn"
+              onclick="loadSavedMaskOverlay()"
+            >
+              🎨 Apply Existing Mask Overlay
+            </button>
+            <button class="btn btn-on" onclick="saveMask()">
+              💾 Save & Apply New Mask
+            </button>
+
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: #252525;
+                padding: 5px 15px;
+                border-radius: 4px;
+              "
+            >
+              <label
+                for="brush-size"
+                style="
+                  font-weight: bold;
+                  color: var(--primary-color);
+                  font-size: 14px;
+                "
+                >🖌️ Brush Size:</label
+              >
+              <input
+                type="range"
+                id="brush-size"
+                min="10"
+                max="100"
+                value="30"
+                step="5"
+                oninput="updateBrushSize(this.value)"
+              />
+              <span
+                id="brush-size-val"
+                style="font-weight: bold; min-width: 30px"
+                >30px</span
+              >
+            </div>
+          </div>
+
+          <div class="painter-container">
+            <img
+              id="base-mask-img"
+              src="/snapshots/latest_frame.jpg"
+              onerror="
+                this.src =
+                  'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'640\' height=\'360\'><rect width=\'100%\' height=\'100%\' fill=\'%23111\'/><text x=\'50%\' y=\'50%\' fill=\'%23444\' dominant-baseline=\'middle\' text-anchor=\'middle\'>Turn Stream ON briefly to capture base canvas template</text></svg>'
+              "
+            />
+            <canvas id="painter-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div id="events" class="tab-content">
+        <div class="card">
+          <h2>Sky Captures Ledger</h2>
+          <div class="filter-bar">
+            <label
+              for="date-select"
+              style="font-weight: bold; color: var(--primary-color)"
+              >📅 View Calendar Day:</label
+            >
+            <input type="date" id="date-select" />
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Logged Frames</th>
+                <th>Snapshot Preview</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Default the calendar picker input to show today's local date automatically
-        const dateInput = document.getElementById('date-select');
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        dateInput.value = `${yyyy}-${mm}-${dd}`;
+      let streamActive = false;
+      let forceTracking = false;
 
-        async function loadLogs() {
-            try {
-                const response = await fetch('/detections_log.txt');
-                if (!response.ok) return;
-                const text = await response.text();
-                
-                const lines = text.trim().split('\n').reverse(); // Newest first
-                const tbody = document.getElementById('ledger-body');
-                
-                // Read whatever date the user currently has selected in the box
-                const selectedDate = dateInput.value; 
+      function switchTab(tabId) {
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
 
-                let matchCount = 0;
-                tbody.innerHTML = ''; 
+        document.getElementById(tabId).classList.add("active");
 
-                lines.forEach(line => {
-                    if (!line.includes('|')) return;
-                    
-                    // Check if this log line belongs to our selected calendar date
-                    if (line.startsWith(selectedDate)) {
-                        const parts = line.split('|');
-                        const timestamp = parts[0].trim();
-                        const filename = parts[1].trim(); 
-                        const durationStr = parts[2] ? parts[2].replace('Tracking duration:', '').trim() : 'N/A';
-
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td style="font-weight: bold; color: #fff;">${timestamp}</td>
-                            <td><span class="badge">${durationStr}</span></td>
-                            <td>
-                                <a href="/snapshots/${filename}" target="_blank">
-                                    <img src="/snapshots/${filename}" class="snapshot-img" alt="Capture">
-                                </a>
-                            </td>
-                        `;
-                        tbody.appendChild(row);
-                        matchCount++;
-                    }
-                });
-
-                // Display a friendly message if nothing flew by on the selected day
-                if (matchCount === 0) {
-                    tbody.innerHTML = `<tr><td colspan="3" class="no-data">🌌 No tracking events logged on ${selectedDate}.</td></tr>`;
-                }
-
-            } catch (err) {
-                console.error("Error updating logs:", err);
-            }
+        // Fix for the event context target highlighting the correct tab
+        if (event && event.currentTarget) {
+          event.currentTarget.classList.add("active");
         }
 
-        // Reload data whenever the user picks a new date on the calendar
-        dateInput.addEventListener('change', loadLogs);
+        // FORCE RE-DRAW: If switching back to the painter tab, manually reload the mask overlay
+        if (tabId === "painter-tab") {
+          resizeCanvas();
+        }
+      }
 
-        // Run instantly and check for live updates every 5 seconds
-        loadLogs();
-        setInterval(loadLogs, 5000);
+      // --- MASTER SYSTEM BUTTON CONTROL FUNCTIONS ---
+      function toggleStream() {
+        streamActive = !streamActive;
+        const img = document.getElementById("stream-img");
+        const fallback = document.getElementById("stream-fallback");
+        const btn = document.getElementById("toggle-stream-btn");
+        const status = document.getElementById("feed-status");
+        const dot = document.getElementById("pulse-dot");
+        const txt = document.getElementById("status-text");
+
+        if (streamActive) {
+          img.src = "/video_feed?rand=" + Math.random();
+          img.style.display = "block";
+          fallback.style.display = "none";
+          btn.className = "btn btn-on";
+          btn.innerText = "🟢 Stream Connection: LIVE";
+          status.className = "live-indicator streaming";
+          dot.style.display = "block";
+          txt.innerText = "FEED BROADCAST ONLINE";
+          fetch("/control?stream=on");
+        } else {
+          img.src = "";
+          img.style.display = "none";
+          fallback.style.display = "flex";
+          btn.className = "btn btn-off";
+          btn.innerText = "❌ Stream Connection: OFF";
+          status.className = "live-indicator";
+          dot.style.display = "none";
+          txt.innerText = "CAMERA DISCONNECTED";
+          fetch("/control?stream=off");
+        }
+      }
+
+      function toggleSleepMode() {
+        forceTracking = !forceTracking;
+        const btn = document.getElementById("toggle-sleep-btn");
+        const lbl = document.getElementById("tracking-status-lbl");
+        if (forceTracking) {
+          btn.innerText = "🚀 Mode: FORCE TRACKING (Day + Night)";
+          btn.className = "btn btn-on";
+          lbl.innerText = "Analyzing Frame Assets (Forced Active)";
+          fetch("/control?tracking=force");
+        } else {
+          btn.innerText = "🌙 Mode: Auto-Solar Sleep";
+          btn.className = "btn btn-primary";
+          lbl.innerText = "Idle (Waiting for Night)";
+          fetch("/control?tracking=auto");
+        }
+      }
+
+      // --- CANVAS MASK PAINTER ENGINE ---
+      const canvas = document.getElementById("painter-canvas");
+      const ctx = canvas.getContext("2d");
+      const bgImg = document.getElementById("base-mask-img");
+      let painting = false;
+
+      function resizeCanvas() {
+        canvas.width = 640;
+        canvas.height = 360;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+        ctx.lineCap = "round";
+
+        const currentSize = document.getElementById("brush-size").value;
+        ctx.lineWidth = currentSize;
+
+        // Immediately pull your existing sky_mask.png from the folder and place it on top
+        const existingMask = new Image();
+        existingMask.src = "/sky_mask.png?rand=" + Math.random();
+        existingMask.onload = function () {
+          ctx.globalAlpha = 0.5; // Transparent overlay so your tree outlines show through
+          ctx.drawImage(existingMask, 0, 0, 640, 360);
+          ctx.globalAlpha = 1.0; // Reset for new paint marks
+          console.log(
+            "🎯 Existing folder mask loaded on top of feed successfully!",
+          );
+        };
+        existingMask.onerror = function () {
+          console.log("Fresh run: No existing mask image found in folder yet.");
+        };
+      }
+
+      // Function to change the brush thickness live as you drag the slider
+      function updateBrushSize(val) {
+        document.getElementById("brush-size-val").innerText = val + "px";
+        ctx.lineWidth = val;
+      }
+      // Manually pulls the existing folder mask and paints it directly onto the visible canvas
+      function loadSavedMaskOverlay() {
+        const existingMask = new Image();
+        existingMask.src = "/sky_mask.png?rand=" + Math.random(); // Forces Windows to read the fresh file
+        existingMask.onload = function () {
+          ctx.globalAlpha = 0.5; // See-through layer so you can see your tree outlines underneath
+          ctx.drawImage(existingMask, 0, 0, 640, 360);
+          ctx.globalAlpha = 1.0; // Reset brush for new drawing strokes
+          console.log("🎯 Folder mask overlaid successfully.");
+        };
+        existingMask.onerror = function () {
+          alert(
+            "Could not locate an existing 'sky_mask.png' in your TacoCam1 folder yet!",
+          );
+        };
+      }
+
+      // Attach the unified resize and mask loader to the image load event
+      bgImg.onload = resizeCanvas;
+
+      canvas.addEventListener("mousedown", (e) => {
+        painting = true;
+        draw(e);
+      });
+      canvas.addEventListener("mouseup", () => {
+        painting = false;
+        ctx.beginPath();
+      });
+      canvas.addEventListener("mousemove", draw);
+
+      function draw(e) {
+        if (!painting) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      }
+
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function saveMask() {
+        // Convert drawn canvas marks into a data URI base64 string
+        const dataURL = canvas.toDataURL("image/png");
+        fetch("/save_mask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image: dataURL,
+            width: canvas.width,
+            height: canvas.height,
+          }),
+        })
+          .then((res) => res.text())
+          .then((msg) =>
+            alert(
+              "✅ Mask configuration synchronized and written to sky_mask.png successfully.",
+            ),
+          );
+      }
+
+      // --- HISTORY LEDGER POPULATER ---
+      const dateInput = document.getElementById("date-select");
+      const today = new Date();
+      dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+      async function loadLogs() {
+        try {
+          const response = await fetch("/detections_log.txt");
+          if (!response.ok) return;
+          const text = await response.text();
+          const lines = text.trim().split("\n").reverse();
+          const tbody = document.getElementById("ledger-body");
+          const selectedDate = dateInput.value;
+          let matchCount = 0;
+          tbody.innerHTML = "";
+
+          lines.forEach((line) => {
+            if (!line.includes("|") || !line.startsWith(selectedDate)) return;
+            const parts = line.split("|");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td style="font-weight: bold; color: #fff;">${parts[0].trim()}</td>
+                        <td><span class="badge">${parts[2].replace("Tracking duration:", "").trim()}</span></td>
+                        <td><a href="/snapshots/${parts[1].trim()}" target="_blank"><img src="/snapshots/${parts[1].trim()}" class="snapshot-img"></a></td>
+                    `;
+            tbody.appendChild(row);
+            matchCount++;
+          });
+          if (matchCount === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="no-data">🌌 No tracking events logged on ${selectedDate}.</td></tr>`;
+          }
+        } catch (err) {}
+      }
+
+      dateInput.addEventListener("change", loadLogs);
+      loadLogs();
+      setInterval(loadLogs, 5000);
     </script>
-</body>
+  </body>
 </html>

@@ -4,68 +4,68 @@ An automated computer vision engine designed to track high-altitude objects (met
 
 ---
 
-## 🛠️ Mac Installation & Setup
+## 💻 Mac Installation & Setup
 
-Because macOS handles certain camera windows and python environments slightly differently than Windows, follow these quick steps to get running.
+Because macOS handles python environments and system binaries differently than Windows, follow these quick steps to get running on a Mac.
 
 ### 1. Install System Dependencies
-Open your Mac Terminal and ensure you have Python 3 and the necessary system tools installed via Homebrew. If you don't have Homebrew, install it first from `brew.sh`.
+Open your Mac Terminal and ensure you have Python 3 and the necessary system tools installed via Homebrew. If you don't have Homebrew installed yet, grab it from `brew.sh`.
 
 ```bash
 # Update Homebrew
 brew update
 
-# Ensure FFmpeg is installed for smooth RTSP video streams
+# Ensure FFmpeg is installed for smooth RTSP video stream processing
 brew install ffmpeg
 
 2. Install Python Packages
-Navigate to this project directory in your terminal and install the required computer vision and calculation frameworks:
+Navigate to this project directory in your Mac terminal and install the required computer vision and calculation frameworks using pip3:
 
 Bash
-pip3 install opencv-python numpy suntime timezonefinder
+pip3 install opencv-python numpy suntime timezonefinder flask
 🚀 How to Run the System
 Step 1: Configure Your Camera Credentials
-Because the core tracking and masking files are protected via .gitignore, you need to set up your own active local credential scripts from the templates provided:
-
-Duplicate mask_painter_template.py and rename the copy to mask_painter.py.
+Because the active tracking file is protected via .gitignore, set up your local tracking script from the template provided:
 
 Duplicate sky_watcher_template.py and rename the copy to sky_watcher.py.
 
-Open both new files and update line 9 with your specific Tapo RTSP stream path:
+Open your new sky_watcher.py file and update the RTSP line with your specific Tapo stream path:
 
 Python
 RTSP_URL = "rtsp://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CAMERA_IP:554/stream2"
-Step 2: Paint Your Custom Sky Mask
-Before running the tracker, you need to block out tree clusters, houses, or string lights that might move in the wind and cause false positives.
-
-Run the utility script:
-
-Bash
-python3 mask_painter.py
-A live video window will appear. Left-click and drag your mouse over any ground objects or tree perimeters to paint them RED.
-
-Once you have cleanly isolated your open window of clear sky, press the S key to save the mask layout and exit. This generates a local sky_mask.png asset.
-
-Step 3: Launch the Tracking Engine
-Open a terminal window and start the background computer vision analyzer:
+Step 2: Launch the Integrated Control Deck
+Open a single terminal window and start the master background loop and web server using Python 3:
 
 Bash
 python3 sky_watcher.py
-💡 Note on Scheduling: By default, FORCE_RUN_FOR_TESTING is set to False. The script will automatically calculate your local solar coordinates, realize it's daytime, and enter a silent background sleep loop. It will automatically wake up and lock onto your live camera stream 45 minutes after sunset, then gracefully close down at dawn. If you want to test it against daytime birds, flip FORCE_RUN_FOR_TESTING = True on line 18.
-
-Step 4: Open Your Local Command Deck
-Open a second separate terminal window (or split your VS Code terminal) to run the lightweight local asset server:
-
-Bash
-python3 dashboard_server.py
-Now, open any web browser on your Mac and navigate to:
+Step 3: Access Your Dashboard & Mask Painter
+Open any web browser and navigate to:
 👉 http://localhost:5000
 
-📊 Features & Space Optimization
-Rolling Buffer: The script continuously records rolling 10-minute dashcam segments (segment_1.mp4 / segment_2.mp4) inside the sky_buffer folder. It safely auto-recycles itself so your Mac storage never fills up.
+Go to the Mask Painter tab.
 
-Auto-Archiving Snapshot Engine: When an object crosses your unmasked sky, the code tracks it frame-by-frame, extracts the mathematical median frame, draws a red target box around it, and logs it by calendar folder paths (snapshots/YYYY-MM-DD/).
+Turn your stream connection LIVE to pull a daytime base template frame.
 
-Auto-Recycle: The snapshots folder features a built-in safety sweep that automatically recycles the oldest images if the folder footprint crosses 2 GB (roughly 45,000 captures).
+If you have an existing mask file on disk, click the gold 🎨 Apply Existing Mask Overlay button to load your trees and boundaries instantly.
 
-Historical Calendar Filtering: Use the calendar input box at the top of the webpage to quickly jump back and audit detections from previous nights when you've been away from your desk.
+Use the brush tool to paint out any unwanted moving tree clusters, houses, or horizon lights.
+
+Click 💾 Save & Apply New Mask to commit the layout directly to sky_mask.png.
+
+🌙 Note on Scheduling & Testing
+By default, the script automatically calculates your local solar coordinates based on your position.
+
+Daytime: It enters a silent background sleep loop to save CPU cycles.
+
+Nighttime: It automatically wakes up and locks onto your live camera stream 45 minutes after sunset, gracefully closing down at dawn.
+
+Bird & Daytime Testing: If you want to force the engine to stay active during the day (to track daytime birds or test your settings), toggle the mode button on the dashboard interface to FORCE TRACKING.
+
+📦 Features & Space Optimization
+Rolling Buffer: The script continuously records rolling 10-minute dashcam segments inside the sky_buffer folder, automatically recycling itself so storage never fills up.
+
+Auto-Archiving Snapshot Engine: When an object crosses your unmasked sky, the code tracks it frame-by-frame, draws a red target box around it, and logs it into the snapshots/ folder.
+
+Auto-Recycle Guard: Features a built-in safety sweep that automatically recycles the oldest images if the folder footprint crosses 2.0 GB.
+
+Historical Calendar Filtering: Use the calendar input box at the top of the webpage to quickly jump back and audit detections from previous nights.

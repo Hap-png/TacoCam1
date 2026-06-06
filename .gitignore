@@ -11,4 +11,3 @@ __pycache__/
 
 # NEW: Protect active live credential files from accidental commits
 sky_watcher.py
-mask_painter.py
