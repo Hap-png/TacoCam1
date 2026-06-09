@@ -4,6 +4,7 @@ snapshots/
 
 # Ignore local text logs
 detections_log.txt
+settings.json
 
 # Ignore Python cache files
 __pycache__/

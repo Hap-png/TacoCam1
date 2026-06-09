@@ -16,6 +16,16 @@
         --btn-success: #11aa51;
         --btn-danger: #3a43c6;
       }
+            /* Ensure the browser-native calendar picker button displays cleanly */
+        .custom-calendar-picker::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1) sepia(1) saturate(5) hue-rotate(90deg);
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 2px;
+        }
+        .custom-calendar-picker::-webkit-calendar-picker-indicator:hover {
+            background: rgba(46, 213, 115, 0.2);
+        }
 
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -296,8 +306,14 @@
           <button class="tab-btn" onclick="switchTab('events')">
             📅 Events Ledger
           </button>
-        </li>
-      </ul>
+        </li>     
+        
+        <li>
+            <button class="tab-btn" onclick="switchTab('settings-tab')">
+              ⚙️ Settings
+            </button>
+          </li>
+        </ul>
     </header>
 
     <div class="container">
@@ -370,10 +386,10 @@
             </p>
             <p>
               <strong>Tracking Engine:</strong>
-              <span id="tracking-status-lbl">Idle (Waiting for Night)</span>
+              <span id="tracking-status-lbl">{{ initial_tracking_status }}</span>
             </p>
             <p>
-              <strong>Target Footprint:</strong> Low-Res Stream (2px - 50px)
+              <strong>Target Footprint:</strong> Low-Res Stream (<span id="status-footprint">2px - 50px</span>)
             </p>
             <p><strong>Auto-Recycle Guard:</strong> 2.0 GB Limit</p>
           </div>
@@ -465,27 +481,94 @@
       <div id="events" class="tab-content">
         <div class="card">
           <h2>Sky Captures Ledger</h2>
-          <div class="filter-bar">
-            <label
-              for="date-select"
-              style="font-weight: bold; color: var(--primary-color)"
-              >📅 View Calendar Day:</label
-            >
-            <input type="date" id="date-select" />
+          
+          <div class="filter-bar" style="margin-bottom: 25px; padding: 15px; background: #141414; border-radius: 6px; border: 1px solid #2d2d2d; display: flex; align-items: center;">
+            <label style="font-weight: bold; color: #2ed573; margin-right: 15px; font-size: 14px;">
+              📅 View Calendar Day:
+            </label>
+            <input type="date" id="date-select" class="custom-calendar-picker" style="background: #222; color: #fff; border: 1px solid #444; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-family: monospace; cursor: pointer; outline: none; min-width: 180px;" />
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Logged Frames</th>
-                <th>Snapshot Preview</th>
-              </tr>
-            </thead>
-            <tbody id="ledger-body"></tbody>
-          </table>
+
+          <div id="ledger-grid-display" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%;">
+          </div>
         </div>
       </div>
-    </div>
+
+      <div id="settings-tab" class="tab-content">
+        <div class="card">
+          <h2>Observatory Core Settings</h2>
+          <p style="color: #888; font-size: 14px; margin-bottom: 20px">
+            Adjust camera pipelines, geographic tracking windows, and computer vision filters without editing Python script assets.
+          </p>
+
+          <form id="settings-form" onsubmit="saveSystemSettings(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 20px;">
+              
+              <div>
+                <h3 style="color: var(--primary-color); margin-bottom: 12px;">🎥 System Infrastructure</h3>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; font-weight: bold; margin-bottom: 5px;">Camera IP Address:</label>
+                  <input type="text" id="cfg-camera-ip" style="width: 90%; background: var(--bg-dark); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px;" />
+                </div>
+
+                <div style="margin-bottom: 15px; background: #1e1e1e; padding: 12px; border-radius: 6px; border: 1px solid #333;">
+                  <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #ff4757;">⚠️ Tracking Loop Master Override:</label>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="cfg-engine-enabled" style="width: 18px; height: 18px; cursor: pointer;" />
+                    <span style="font-size: 13px; color: #ccc;">Keep tracking loop engine awake and feeding calculations</span>
+                  </div>
+                </div>
+              </div>
+
+             <div>
+                <h3 style="color: var(--primary-color); margin-bottom: 12px;">🌎 Geolocation & Tracking Matrix</h3>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                  <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Latitude:</label>
+                    <input type="number" step="0.0001" id="cfg-latitude" style="width: 100%; background: var(--bg-dark); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px;" />
+                  </div>
+                  <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Longitude:</label>
+                    <input type="number" step="0.0001" id="cfg-longitude" style="width: 100%; background: var(--bg-dark); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px;" />
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-start;">
+                  <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; white-space: nowrap;">Min Object (Px):</label>
+                    <input type="number" id="cfg-min-size" style="width: 100%; background: var(--bg-dark); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px;" />
+                  </div>
+                  <div style="flex: 1;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; white-space: nowrap;">Max Object (Px):</label>
+                    <input type="number" id="cfg-max-size" style="width: 100%; background: var(--bg-dark); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px;" />
+                  </div>
+                  <div style="flex: 2;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; white-space: nowrap;">🎯 Motion Sensitivity:</label>
+                    <input type="number" id="cfg-sensitivity" style="width: 100%; background: var(--bg-dark); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px;" min="5" max="255" />
+                  </div>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid #2d2d2d; padding: 15px; border-radius: 6px;">
+                  <h4 style="margin: 0 0 10px 0; font-size: 13px; color: var(--primary-color); display: flex; align-items: center; gap: 6px;">
+                    📊 Sky Conditions Calibration Guide
+                  </h4>
+                  <p style="color: #bbb; font-size: 12px; margin: 0; line-height: 1.6;">
+                    ☀️ <strong style="color: #ffb86c;">Low Numbers (20 - 35):</strong> Deep daylight sensitivity. Best for bright white cloud layers, haze, or direct sun exposure where passing trails have very low contrast.<br style="margin-bottom: 6px;">
+                    🔷 <strong style="color: #66d9ef;">Middle Numbers (36 - 55):</strong> Balanced daylight tracking. Perfect for clear, deep blue daytime skies with crisp visibility.<br style="margin-bottom: 6px;">
+                    🌙 <strong style="color: #ff79c6;">Higher Numbers (56 - 80+):</strong> Night operations & storm guards. Best for dark night skies, heavy moon exposure, or filtering out false triggers from high winds and rolling cloud edges.
+                  </p>
+                </div>
+
+              </div>
+
+            <button type="submit" class="btn btn-on" style="background-color: #2ed573; color: #fff; font-size: 15px; padding: 12px 24px;">
+              💾 Save & Apply System Settings
+            </button>
+          </form>
+        </div>
+      </div>
 
     <script>
       let streamActive = false;
@@ -663,43 +746,165 @@
           );
       }
 
-      // --- HISTORY LEDGER POPULATER ---
-      const dateInput = document.getElementById("date-select");
-      const today = new Date();
-      dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      // --- DYNAMIC GRID LEDGER PARSER ---
+const dateInput = document.getElementById("date-select");
+if (dateInput && !dateInput.value) {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  dateInput.value = `${yyyy}-${mm}-${dd}`;
+}
 
-      async function loadLogs() {
+// --- LIVE OBSERVATORY ENGINE HEARTBEAT ---
+function updateLiveStatus() {
+  fetch('/api/status')
+    .then(response => response.json())
+    .then(data => {
+      // Target your exact HTML span element ID from line 389
+      const engineLabel = document.getElementById('tracking-status-lbl'); 
+      
+      if (engineLabel) {
+        engineLabel.textContent = data.status_text;
+        
+        // Match the text color to the active system state
+        if (data.is_dark) {
+          engineLabel.style.color = '#66d9ef'; // Electric Blue when active
+        } else {
+          engineLabel.style.color = '#aaa';    // Balanced dim gray for daytime standby
+        }
+      }
+    })
+    .catch(err => console.error("Error fetching live heartbeat status:", err));
+}
+
+// Fire it off once immediately on page load, then refresh every 5 seconds
+document.addEventListener('DOMContentLoaded', () => {
+  updateLiveStatus();
+  setInterval(updateLiveStatus, 5000);
+});
+
+async function loadLogs() {
+  try {
+    const response = await fetch("/detections_log.txt");
+    if (!response.ok) return;
+    const text = await response.text();
+    
+    const gridContainer = document.getElementById("ledger-grid-display");
+    if (!gridContainer) return;
+    
+    gridContainer.innerHTML = "";
+    const lines = text.trim().split("\n").reverse();
+    const selectedDate = dateInput.value;
+    let matchCount = 0;
+
+    lines.forEach(line => {
+      if (!line.trim() || !line.includes("|")) return;
+      
+      const parts = line.split("|");
+      const timestamp = parts[0].trim();
+      const imagePath = parts[1].trim();
+      const frameCountText = parts[2] ? parts[2].trim() : "Event logged";
+      
+      if (!timestamp.startsWith(selectedDate)) return;
+      matchCount++;
+      
+      const timeOnly = timestamp.split(" ")[1] || "00:00:00";
+      
+      const cardHtml = `
+        <div class="ledger-card" style="background: #181818; border: 1px solid #2d2d2d; border-radius: 8px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.6);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px;">
+            <span style="color: #2ed573; font-weight: bold;">⏰ ${timeOnly}</span>
+            <span style="background: rgba(255, 184, 108, 0.15); color: #ffb86c; border: 1px solid #ffb86c; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;">
+              🎬 ${frameCountText.replace("Tracking duration:", "").replace(".", "").trim()}
+            </span>
+          </div>
+          <div style="width: 100%; border-radius: 4px; overflow: hidden; border: 1px solid #222; background: #000;">
+            <img src="/snapshots/${imagePath}" alt="Sky capture" style="width: 100%; height: auto; display: block; cursor: zoom-in;" onclick="window.open(this.src)" />
+          </div>
+        </div>
+      `;
+      
+      gridContainer.insertAdjacentHTML("beforeend", cardHtml);
+    });
+
+    if (matchCount === 0) {
+      gridContainer.innerHTML = `
+        <div style="grid-column: span 3; text-align: center; color: #888; padding: 40px; background: #141414; border-radius: 6px; border: 1px solid #222;">
+          🌌 No tracking events logged on ${selectedDate}.
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error("Ledger rendering glitch:", err);
+  }
+}
+
+// Event hooks to run automatically and listen for calendar clicks
+if (dateInput) {
+  dateInput.addEventListener("change", loadLogs);
+}
+loadLogs();
+setInterval(loadLogs, 5000);
+      // --- SETTINGS SYNC PIPELINE LAYER ---
+      
+      // Automatically pull settings on page boot up
+      async function loadSystemSettings() {
         try {
-          const response = await fetch("/detections_log.txt");
+          const response = await fetch('/get_settings');
           if (!response.ok) return;
-          const text = await response.text();
-          const lines = text.trim().split("\n").reverse();
-          const tbody = document.getElementById("ledger-body");
-          const selectedDate = dateInput.value;
-          let matchCount = 0;
-          tbody.innerHTML = "";
-
-          lines.forEach((line) => {
-            if (!line.includes("|") || !line.startsWith(selectedDate)) return;
-            const parts = line.split("|");
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                        <td style="font-weight: bold; color: #fff;">${parts[0].trim()}</td>
-                        <td><span class="badge">${parts[2].replace("Tracking duration:", "").trim()}</span></td>
-                        <td><a href="/snapshots/${parts[1].trim()}" target="_blank"><img src="/snapshots/${parts[1].trim()}" class="snapshot-img"></a></td>
-                    `;
-            tbody.appendChild(row);
-            matchCount++;
-          });
-          if (matchCount === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="no-data">🌌 No tracking events logged on ${selectedDate}.</td></tr>`;
+          const cfg = await response.json();
+          
+          // Safely populate form fields without destroying the DOM
+          document.getElementById('cfg-camera-ip').value = cfg.camera_ip || '';
+          document.getElementById('cfg-latitude').value = cfg.latitude || '';
+          document.getElementById('cfg-longitude').value = cfg.longitude || '';
+          document.getElementById('cfg-min-size').value = cfg.min_object_size || 2;
+          document.getElementById('cfg-max-size').value = cfg.max_object_size || 50;
+          document.getElementById('cfg-engine-enabled').checked = cfg.tracking_engine_enabled;
+          document.getElementById('cfg-sensitivity').value = cfg.sensitivity_threshold || 35;
+          
+          // Dynamically update the target footprint sidebar text cleanly
+          const footprintEl = document.getElementById('status-footprint');
+          if (footprintEl) {
+            footprintEl.textContent = `${cfg.min_object_size}px - ${cfg.max_object_size}px`;
           }
-        } catch (err) {}
+        } catch (err) {
+          console.error("Failed loading configuration sync:", err);
+        }
       }
 
-      dateInput.addEventListener("change", loadLogs);
-      loadLogs();
-      setInterval(loadLogs, 5000);
+      // POST new form data back to the Flask backend
+      function saveSystemSettings(e) {
+        e.preventDefault();
+        
+        const payload = {
+          camera_ip: document.getElementById('cfg-camera-ip').value,
+          latitude: parseFloat(document.getElementById('cfg-latitude').value),
+          longitude: parseFloat(document.getElementById('cfg-longitude').value),
+          min_object_size: parseInt(document.getElementById('cfg-min-size').value),
+          max_object_size: parseInt(document.getElementById('cfg-max-size').value),
+          tracking_engine_enabled: document.getElementById('cfg-engine-enabled').checked,
+          sensitivity_threshold: parseInt(document.getElementById('cfg-sensitivity').value),
+        };
+
+        fetch('/save_settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.text())
+        .then(msg => {
+          alert("✅ Configuration written to settings.json. Changes loaded live into observatory loop parameters!");
+          
+          // --- ADD THIS LINE RIGHT HERE ---
+          document.getElementById('status-footprint').textContent = `${payload.min_object_size}px - ${payload.max_object_size}px`;
+        })
+        .catch(err => alert("Error writing configuration updates: " + err));
+      }
+
+      // Hook configuration loader into window runtime initialization
+      window.addEventListener('DOMContentLoaded', loadSystemSettings);
     </script>
   </body>
 </html>
